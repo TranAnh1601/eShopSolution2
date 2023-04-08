@@ -8,11 +8,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using eShopSolution.ViewModels.Catalog.ProductImages;
+using Microsoft.AspNetCore.Http;
 
 namespace eShopSolution.Application.Catalog.Products
 {
     //interface
-    public interface IManagedProductService
+    public interface IManageProductService
     {
         // dinh nghia phuong thuc
         //tra ve ma san pham vua tao
@@ -21,13 +22,14 @@ namespace eShopSolution.Application.Catalog.Products
         Task<int> Update(ProductUpdateRequest request);
 
         Task<int> Delete(int productId);
+        Task<ProductViewModel>GetById(int productId, string languageId); //
 
         Task<bool> UpdatePrice(int productId, decimal newPrice);
 
         Task<bool> UpdateStock(int productId, int addedQuantity);
         Task AddViewcount(int productId);
 
-        Task<int> AddImage(int productId, ProductImageCreateRequest request);
+        Task<int> AddImage(int productId, List<IFormFile> files); //, ProductImageCreateRequest request
 
         Task<int> UpdateImage(int imageId, ProductImageUpdateRequest request);
 

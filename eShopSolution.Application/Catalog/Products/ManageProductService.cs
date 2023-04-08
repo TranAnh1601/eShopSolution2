@@ -17,7 +17,7 @@ using System.Threading.Tasks;
 
 namespace eShopSolution.Application.Catalog.Products
 {
-    public class ManageProductService : IManagedProductService
+    public class ManageProductService : IManageProductService
     {
         //khai bao bien noi bo
         private readonly EShopDbContext _context;
@@ -80,7 +80,8 @@ namespace eShopSolution.Application.Catalog.Products
                 };
             }
             _context.Products.Add(product);
-            return await _context.SaveChangesAsync();
+             await _context.SaveChangesAsync();
+            return product.Id;
         }
 
         public async Task<int> Delete(int productId)
@@ -205,26 +206,28 @@ namespace eShopSolution.Application.Catalog.Products
             return "/" + USER_CONTENT_FOLDER_NAME + "/" + fileName;
         }
 
-        public async Task<int> AddImage(int productId, ProductImageCreateRequest request)
+        public async Task<int> AddImage(int productId, List<IFormFile> files)  //ProductImageCreateRequest request
         {
-            var productImage = new ProductImage()
-            {
-                Caption = request.Caption,
-                DateCreated = DateTime.Now,
-                IsDefault = request.IsDefault,
-                ProductId = productId,
-                SortOrder = request.SortOrder
-            };
+            //var productImage = new ProductImage()
+            //{
+            //    Caption = request.Caption,
+            //    DateCreated = DateTime.Now,
+            //    IsDefault = request.IsDefault,
+            //    ProductId = productId,
+            //    SortOrder = request.SortOrder
+            //};
 
-            if (request.ImageFile != null)
-            {
-                productImage.ImagePath = await this.SaveFile(request.ImageFile);
-                productImage.FileSize = request.ImageFile.Length;
-            }
-            _context.ProductImages.Add(productImage);
+            //if (request.ImageFile != null)
+            //{
+            //    productImage.ImagePath = await this.SaveFile(request.ImageFile);
+            //    productImage.FileSize = request.ImageFile.Length;
+            //}
+            //_context.ProductImages.Add(productImage);
 
-            await _context.SaveChangesAsync();
-            return productImage.Id;
+            //await _context.SaveChangesAsync();
+            //return productImage.Id;
+            throw new NotImplementedException();
+
         }
 
         public async Task<int> UpdateImage(int imageId, ProductImageUpdateRequest request)
@@ -286,6 +289,40 @@ namespace eShopSolution.Application.Catalog.Products
                 throw new EShopException($"Cannot find an image with id {imageId}");
             _context.ProductImages.Remove(productImage);
             return await _context.SaveChangesAsync();
+        }
+
+        public async Task<ProductViewModel> GetById(int productId, string languageId)
+        {
+            var product = await _context.Products.FindAsync(productId);
+            var productTranslation = await _context.ProductTranslations.FirstOrDefaultAsync(x => x.ProductId == productId
+            && x.LanguageId == languageId);
+
+            //var categories = await (from c in _context.Categories
+            //                        join ct in _context.CategoryTranslations on c.Id equals ct.CategoryId
+            //                        join pic in _context.ProductInCategories on c.Id equals pic.CategoryId
+            //                        where pic.ProductId == productId && ct.LanguageId == languageId
+            //                        select ct.Name).ToListAsync();
+
+            //var image = await _context.ProductImages.Where(x => x.ProductId == productId && x.IsDefault == true).FirstOrDefaultAsync();
+            //Categories = categories,
+            //ThumbnailImage = image != null ? image.ImagePath : "no-image.jpg"
+            var productViewModel = new ProductViewModel()
+            {
+                Id = product.Id,
+                DateCreated = product.DateCreated,
+                Description = productTranslation != null ? productTranslation.Description : null,
+                LanguageId = productTranslation.LanguageId,
+                Details = productTranslation != null ? productTranslation.Details : null,
+                Name = productTranslation != null ? productTranslation.Name : null,
+                OriginalPrice = product.OriginalPrice,
+                Price = product.Price,
+                SeoAlias = productTranslation != null ? productTranslation.SeoAlias : null,
+                SeoDescription = productTranslation != null ? productTranslation.SeoDescription : null,
+                SeoTitle = productTranslation != null ? productTranslation.SeoTitle : null,
+                Stock = product.Stock,
+                ViewCount = product.ViewCount
+            };
+            return productViewModel;
         }
     }
 }
