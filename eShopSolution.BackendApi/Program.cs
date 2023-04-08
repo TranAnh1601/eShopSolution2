@@ -20,7 +20,11 @@ builder.Services.AddDbContext<EShopDbContext>(options => options.UseSqlServer(co
 
 
 // MOI LAN REQUET  thi tao moi, 
+builder.Services.AddTransient<IStorageService, FileStorageService>();
+
 builder.Services.AddTransient<IPublicProductService, PublicProductService>();
+builder.Services.AddTransient<IManageProductService, ManageProductService>();
+
 
 builder.Services.AddSwaggerGen(c =>
 {
